@@ -1,0 +1,174 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Gapminder World</title>
+    <script type="text/javascript" src="d3/d3.v3.js">
+    </script>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body>
+
+    <script type="text/javascript">
+        var raw_data;
+        var dataset;
+        var height = 600;
+        var width = 1250;
+        var padding = 30;
+        var xScale;
+        var yScale;
+        var rScale;
+        var rRangeMin = 2;
+        var rRangeMax = 60;
+        var xAxis;
+        var yAxis;
+
+        d3.csv("Gapminder_All_Time.csv", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+
+                //Create xScale
+                xScale = d3.scale.log()
+                    .domain([d3.min(data, function (d) {
+                            return parseInt(d.GDP);
+                        }),
+                             d3.max(data, function (d) {
+                            return parseInt(d.GDP);
+                        })])
+                    .range([padding, width - padding * 2]);
+
+                yScale = d3.scale.linear()
+                    .domain([d3.min(data, function (d) {
+                            return parseFloat(d.LifeExp);
+                        }),
+                             d3.max(data, function (d) {
+                            return parseFloat(d.LifeExp);
+                        })])
+                    .range([height - padding, padding]);
+
+                rScale = d3.scale.linear()
+                    .domain([d3.min(data, function (d) {
+                            return parseInt(d.Population);
+                        }),
+                             d3.max(data, function (d) {
+                            return parseInt(d.Population);
+                        })])
+                    .range([rRangeMin, rRangeMax]);
+
+                dataset = d3.nest()
+                    .key(function (d) {
+                        return d.Year
+                    })
+                    .sortKeys(d3.ascending)
+                    .map(data);
+
+                makeVisualization();
+            }
+        });
+
+
+        function makeVisualization() {
+            var YEAR = 1900;
+            dataset = dataset[YEAR];
+            //console.log(dataset);
+
+            xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient("bottom")
+                .ticks(8);
+
+            yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient("left")
+                .ticks(5);
+
+            //Create svg
+            var svg = d3.select("body")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            svg.selectAll("circle")
+                .data(dataset)
+                .enter()
+                .append("circle")
+                .attr("cx", function (d) {
+                    return xScale(d.GDP);
+                })
+                .attr("cy", function (d) {
+                    return yScale(d.LifeExp);
+                })
+                .attr("r", function (d) {
+                    return rScale(d.Population);
+                })
+                .style("fill", function (d) {
+                    return color(d.Region);
+                });
+
+            svg.selectAll("text")
+                .data(dataset)
+                .enter()
+                .append("text")
+                .attr("class", "countryname")
+                .text(function (d) {
+                    return d.Country;
+                })
+                .attr("x", function (d) {
+                    return (xScale(d.GDP))
+                })
+                .attr("y", function (d) {
+                    return yScale(d.LifeExp);
+                })
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "11px");
+
+            //Create X axis
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + (height - padding) + ")")
+                .call(xAxis)
+                .call(xAxis);
+
+            //Create Y axis
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis);
+
+        }
+
+        function color(region) {
+            switch (region) {
+            case "Asia":
+                return "#ED61A5";
+
+            case "Africa":
+                return "#3B8CCB";
+
+            case "Europe":
+                return "#3B8CCB";
+
+            case "North America":
+                return "#71BF44";
+
+            case "South America":
+                return "#71BF44";
+
+            case "Australia":
+                return "#ED61A5";
+
+            case "Central America":
+                return "#71BF44";
+
+            case "Oceania":
+                return "#ED61A5";
+
+            }
+        }
+    </script>
+
+</body>
+
+</html>
