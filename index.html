@@ -77,8 +77,6 @@
                     .sortKeys(d3.ascending)
                     .map(data);
 
-                makeVisualization();
-
                 //Create Year slider
                 //get all unique years
                 yearValues = d3.map(data, function (d) {
@@ -102,14 +100,19 @@
                     .attr("value", 0)
                     .attr("id", "slider-time")
                     .style("width", "900px")
-                    .on("mousemove", testText);
+                    .on("mousemove", updateVisualization);
+
+                makeVisualization(yearValues[0]);
             }
+
         });
 
 
-        function makeVisualization() {
-            var YEAR = 2012;
-            dataset = dataset[YEAR];
+        function makeVisualization(year) {
+
+            var currYearData = dataset[year];
+
+            d3.select("#gapmindersvg").remove();
 
             xAxis = d3.svg.axis()
                 .scale(xScale)
@@ -128,10 +131,11 @@
             svg = d3.select("body")
                 .append("svg")
                 .attr("width", width)
-                .attr("height", height);
+                .attr("height", height)
+                .attr("id", "gapmindersvg");
 
             svg.selectAll("circle")
-                .data(dataset)
+                .data(currYearData)
                 .enter()
                 .append("circle")
                 .attr("cx", function (d) {
@@ -149,6 +153,11 @@
                 .style("fill", function (d) {
                     return color(d.Region);
                 });
+
+            svg.append("text")
+                .text(year)
+                .attr("x", 25)
+                .attr("y", 25)
 
             //Create X axis
             svg.append("g")
@@ -222,14 +231,11 @@
             }
         }
 
-        function testText() {
-            d3.select("#textyear").remove();
+        function updateVisualization() {
 
-            svg.append("text")
-                .attr("x", 25)
-                .attr("y", 25)
-                .attr("id", "textyear")
-                .text(yearValues[d3.select("#slider-time").property("value")]);
+            var selectedYear = yearValues[d3.select("#slider-time").property("value")];
+
+            makeVisualization(selectedYear);
         }
     </script>
 
