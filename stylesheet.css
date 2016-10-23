@@ -7,12 +7,6 @@ div.bar {
     margin-right: 2px;
 }
 
-.pumpkin {
-    fill: yellow;
-    stroke: orange;
-    stroke-width: 5;
-}
-
 .axis path,
 .axis line {
     fill: none;
@@ -26,5 +20,6 @@ div.bar {
 }
 
 .countryname {
-    font-size: 24px;
+    font-size: 11px;
+    font-family: sans-serif;
 }

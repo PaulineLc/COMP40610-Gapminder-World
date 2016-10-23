@@ -19,10 +19,12 @@
         var xScale;
         var yScale;
         var rScale;
-        var rRangeMin = 2;
+        var rRangeMin = 3;
         var rRangeMax = 60;
         var xAxis;
         var yAxis;
+        var svg;
+        var yearScale;
 
         d3.csv("Gapminder_All_Time.csv", function (error, data) {
             if (error) {
@@ -70,14 +72,16 @@
 
 
         function makeVisualization() {
-            var YEAR = 1900;
+            var YEAR = 2012;
             dataset = dataset[YEAR];
             //console.log(dataset);
 
             xAxis = d3.svg.axis()
                 .scale(xScale)
                 .orient("bottom")
-                .ticks(8);
+                .tickFormat(function (d) {
+                    return xScale.tickFormat(8, d3.format(",d"))(d)
+                });
 
             yAxis = d3.svg.axis()
                 .scale(yScale)
@@ -85,7 +89,7 @@
                 .ticks(5);
 
             //Create svg
-            var svg = d3.select("body")
+            svg = d3.select("body")
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height);
@@ -103,26 +107,18 @@
                 .attr("r", function (d) {
                     return rScale(d.Population);
                 })
+                .style("stroke", "black")
+                .on("mouseover", displayCountryName)
+                .on("mouseout", removeCountryName)
                 .style("fill", function (d) {
                     return color(d.Region);
                 });
 
-            svg.selectAll("text")
-                .data(dataset)
-                .enter()
-                .append("text")
-                .attr("class", "countryname")
-                .text(function (d) {
-                    return d.Country;
-                })
-                .attr("x", function (d) {
-                    return (xScale(d.GDP))
-                })
-                .attr("y", function (d) {
-                    return yScale(d.LifeExp);
-                })
-                .attr("font-family", "sans-serif")
-                .attr("font-size", "11px");
+            svg.append("text")
+                .text(YEAR)
+                .attr("x", 25)
+                .attr("y", 25)
+                .attr("font-size", "30px");
 
             //Create X axis
             svg.append("g")
@@ -136,9 +132,36 @@
                 .attr("class", "axis")
                 .attr("transform", "translate(" + padding + ",0)")
                 .call(yAxis);
-
         }
 
+        //displayCountryName() and removeCountryName implemented with the help of:
+        //http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+        // Display country name when mouse is over the country bubble
+        function displayCountryName(d, i) {
+            console.log(d.GDP);
+            svg.append("text").attr({
+                    id: "t" + d.Code + "-" + d.Year + "-" + i,
+                    // Create an id for text so we can select it later for removing on mouseout
+                    class: "countryname",
+                    x: function () {
+                        return xScale(d.GDP);
+                    },
+                    y: function () {
+                        return yScale(d.LifeExp);
+                    }
+                })
+                .text(function () {
+                    return d.Country;
+                });
+        }
+
+        //remove country name when mouse gets away from the vountry bubble
+        function removeCountryName(d, i) {
+            // Select text by id and then remove
+            d3.select("#t" + d.Code + "-" + d.Year + "-" + i).remove();
+        }
+
+        // Pick a color for the country bubble
         function color(region) {
             switch (region) {
             case "Asia":
