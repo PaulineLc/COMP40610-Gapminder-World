@@ -24,7 +24,8 @@
         var xAxis;
         var yAxis;
         var svg;
-        var yearScale;
+        var yearSlider;
+        var yearValues;
 
         d3.csv("Gapminder_All_Time.csv", function (error, data) {
             if (error) {
@@ -33,32 +34,42 @@
 
                 //Create xScale
                 xScale = d3.scale.log()
-                    .domain([d3.min(data, function (d) {
-                            return parseInt(d.GDP);
-                        }),
-                             d3.max(data, function (d) {
-                            return parseInt(d.GDP);
-                        })])
+                    .domain([d3.min(data,
+                            function (d) {
+                                return parseInt(d.GDP);
+                            }),
+                             d3.max(data,
+                            function (d) {
+                                return parseInt(d.GDP);
+                            })])
                     .range([padding, width - padding * 2]);
 
+                //creates yScale
                 yScale = d3.scale.linear()
-                    .domain([d3.min(data, function (d) {
-                            return parseFloat(d.LifeExp);
-                        }),
-                             d3.max(data, function (d) {
-                            return parseFloat(d.LifeExp);
-                        })])
+                    .domain([d3.min(data,
+                            function (d) {
+                                return parseFloat(d.LifeExp);
+                            }),
+                             d3.max(data,
+                            function (d) {
+                                return parseFloat(d.LifeExp);
+                            })])
                     .range([height - padding, padding]);
 
+                //create rscale
                 rScale = d3.scale.linear()
-                    .domain([d3.min(data, function (d) {
-                            return parseInt(d.Population);
-                        }),
-                             d3.max(data, function (d) {
-                            return parseInt(d.Population);
-                        })])
+                    .domain([d3.min(data,
+                            function (d) {
+                                return parseInt(d.Population);
+                            }),
+                             d3.max(data,
+                            function (d) {
+                                return parseInt(d.Population);
+                            })])
                     .range([rRangeMin, rRangeMax]);
 
+
+                //Create dataset with year as keys
                 dataset = d3.nest()
                     .key(function (d) {
                         return d.Year
@@ -67,6 +78,31 @@
                     .map(data);
 
                 makeVisualization();
+
+                //Create Year slider
+                //get all unique years
+                yearValues = d3.map(data, function (d) {
+                    return d.Year;
+                }).keys();
+                //get years as integer
+                for (var i = 0; i < yearValues.length; i++) {
+                    yearValues[i] = +yearValues[i];
+                };
+                //sort years (just in case)
+                yearValues.sort()
+                console.log(yearValues.length);
+
+                yearSlider = d3.select("body")
+                    .append("input")
+                    .attr("type", "range")
+                    .attr("name", "points")
+                    .attr("min", 0)
+                    .attr("max", yearValues.length - 1)
+                    .attr("step", 1)
+                    .attr("value", 0)
+                    .attr("id", "slider-time")
+                    .style("width", "900px")
+                    .on("mousemove", testText);
             }
         });
 
@@ -74,7 +110,6 @@
         function makeVisualization() {
             var YEAR = 2012;
             dataset = dataset[YEAR];
-            //console.log(dataset);
 
             xAxis = d3.svg.axis()
                 .scale(xScale)
@@ -87,6 +122,7 @@
                 .scale(yScale)
                 .orient("left")
                 .ticks(5);
+
 
             //Create svg
             svg = d3.select("body")
@@ -114,12 +150,6 @@
                     return color(d.Region);
                 });
 
-            svg.append("text")
-                .text(YEAR)
-                .attr("x", 25)
-                .attr("y", 25)
-                .attr("font-size", "30px");
-
             //Create X axis
             svg.append("g")
                 .attr("class", "axis")
@@ -132,13 +162,14 @@
                 .attr("class", "axis")
                 .attr("transform", "translate(" + padding + ",0)")
                 .call(yAxis);
+
+
         }
 
         //displayCountryName() and removeCountryName implemented with the help of:
         //http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
         // Display country name when mouse is over the country bubble
         function displayCountryName(d, i) {
-            console.log(d.GDP);
             svg.append("text").attr({
                     id: "t" + d.Code + "-" + d.Year + "-" + i,
                     // Create an id for text so we can select it later for removing on mouseout
@@ -189,6 +220,16 @@
                 return "#ED61A5";
 
             }
+        }
+
+        function testText() {
+            d3.select("#textyear").remove();
+
+            svg.append("text")
+                .attr("x", 25)
+                .attr("y", 25)
+                .attr("id", "textyear")
+                .text(yearValues[d3.select("#slider-time").property("value")]);
         }
     </script>
 
