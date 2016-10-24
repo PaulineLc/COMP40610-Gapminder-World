@@ -49,7 +49,8 @@
         var svg = d3.select("body")
             .append("svg")
             .attr("width", 900)
-            .attr("height", 400)
+            .attr("height", 500)
+            .style("border", "1px solid black")
 
         function testText() {
             d3.select("#textyear").remove();
@@ -60,6 +61,20 @@
                 .attr("id", "textyear")
                 .text(yearScale(d3.select("#slider-time").property("value")))
         }
+
+        svg.append("circle")
+            .attr("cx", 50)
+            .attr("cy", 50)
+            .attr("r", 50)
+            .style("fill", "pink");
+
+        svg.selectAll("circle")
+            .transition()
+            .duration(3000)
+            .attr("cx", 825)
+            .attr("cy", 425)
+            .attr("r", 75)
+            .style("fill", "blue");
 
 
         //        //        //Width and height

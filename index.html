@@ -156,8 +156,11 @@
 
             svg.append("text")
                 .text(year)
-                .attr("x", 25)
-                .attr("y", 25)
+                .attr("x", 59)
+                .attr("y", 70)
+                .style("color", "blue")
+                .style("font-size", "48px")
+                .style("fill", "rgba(0, 0, 0, 0.3)");
 
             //Create X axis
             svg.append("g")
@@ -231,6 +234,7 @@
             }
         }
 
+        //update visualisation when the slider moves
         function updateVisualization() {
 
             var selectedYear = yearValues[d3.select("#slider-time").property("value")];
