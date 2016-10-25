@@ -19,7 +19,7 @@ div.bar {
     font-size: 11px;
 }
 
-.countryname {
-    font-size: 11px;
-    font-family: sans-serif;
+.selectedCountry {
+    font-family: 'Droid Sans Mono', monospace;
+    font-size: 48px;
 }

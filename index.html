@@ -214,15 +214,13 @@
                 .transition()
                 .duration(500)
                 .attr({
-                    id: "selectedCountry",
+                    class: "selectedCountry",
                     // Create an id for text so we can select it later for removing on mouseout
-                    class: "countryname",
-                    x: function () {
-                        return (width - d.Country.length * 35);
-                    },
+                    x: 1190,
                     y: 550
                 })
                 .style("font-size", "48px")
+                .attr("text-anchor", "end")
                 .text(function () {
                     return d.Country;
                 });
@@ -241,7 +239,10 @@
         //remove country name when mouse gets away from the vountry bubble
         function removeCountryName(d) {
             // Select text by id and then remove
-            d3.select("#selectedCountry").remove();
+            d3.selectAll(".selectedCountry")
+                .transition()
+                .duration(200)
+                .remove();
 
             svg.selectAll("circle")
                 .transition()
