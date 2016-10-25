@@ -5,13 +5,14 @@
     <title>Gapminder World</title>
     <script type="text/javascript" src="d3/d3.v3.js">
     </script>
+    <script type="text/javascript" src="d3/d3.slider.js"></script>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <link rel="stylesheet" href="d3/d3.slider.css" />
 </head>
 
 <body>
 
     <script type="text/javascript">
-        var raw_data;
         var dataset;
         var height = 600;
         var width = 1250;
@@ -91,17 +92,18 @@
                 yearValues.sort()
 
                 yearSlider = d3.select("body")
-                    .append("input")
-                    .attr("type", "range")
-                    .attr("name", "points")
-                    .attr("min", 0)
-                    .attr("max", yearValues.length - 1)
-                    .attr("step", 1)
-                    .attr("value", 0)
-                    .attr("id", "slider-time")
-                    .style("width", "900px")
-                    .on("click", updateVisualization);
+                    .append("div")
+                    .attr("width", "200px")
+                    .call(d3.slider()
+                        .axis(true)
+                        .min(0)
+                        .max(yearValues.length - 1)
+                        .step(1)
+                        .on("slide", function (evt, value) {
+                            makeVisualization(yearValues[value])
+                        }));
 
+                // create X axis
                 xAxis = d3.svg.axis()
                     .scale(xScale)
                     .orient("bottom")
@@ -109,6 +111,7 @@
                         return xScale.tickFormat(8, d3.format(",d"))(d)
                     });
 
+                //create Y axis
                 yAxis = d3.svg.axis()
                     .scale(yScale)
                     .orient("left")
@@ -122,12 +125,12 @@
                     .attr("height", height)
                     .attr("id", "gapmindersvg");
 
+                //Display current year
                 svg.append("text")
                     .text(yearValues[0])
                     .attr("id", "currentyeardiplsayed")
                     .attr("x", 59)
                     .attr("y", 70)
-                    .style("color", "blue")
                     .style("font-size", "48px")
                     .style("fill", "rgba(0, 0, 0, 0.3)");
 
@@ -144,11 +147,11 @@
                     .attr("transform", "translate(" + padding + ",0)")
                     .call(yAxis);
 
+                //Make the visualisation
                 makeVisualization(yearValues[0]);
             }
 
         });
-
 
         function makeVisualization(year) {
 
@@ -161,7 +164,7 @@
 
             country_bubbles
                 .transition()
-                .duration(2000)
+                .duration(1000)
                 .attr("cx", function (d) {
                     return xScale(d.GDP);
                 })
@@ -174,6 +177,9 @@
 
             country_bubbles.enter()
                 .append("circle")
+                .attr("id", function (d) {
+                    return "circle-" + d.Code;
+                })
                 .on("mouseover", function (d) {
                     displayCountryName(d);
                 })
@@ -204,26 +210,43 @@
         //http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
         // Display country name when mouse is over the country bubble
         function displayCountryName(d) {
-            svg.append("text").attr({
-                    id: "t" + d.Code + "-" + d.Year,
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    id: "selectedCountry",
                     // Create an id for text so we can select it later for removing on mouseout
                     class: "countryname",
                     x: function () {
-                        return xScale(d.GDP);
+                        return (width - d.Country.length * 35);
                     },
-                    y: function () {
-                        return yScale(d.LifeExp);
-                    }
+                    y: 550
                 })
+                .style("font-size", "48px")
                 .text(function () {
                     return d.Country;
                 });
+
+            svg.selectAll("circle")
+                .transition()
+                .duration(500)
+                .style("opacity", 0.3)
+
+            d3.select("#circle-" + d.Code)
+                .transition()
+                .duration(100)
+                .style("opacity", 1);
         }
 
         //remove country name when mouse gets away from the vountry bubble
         function removeCountryName(d) {
             // Select text by id and then remove
-            d3.select("#t" + d.Code + "-" + d.Year).remove();
+            d3.select("#selectedCountry").remove();
+
+            svg.selectAll("circle")
+                .transition()
+                .duration(200)
+                .style("opacity", 1)
         }
 
         // Pick a color for the country bubble
@@ -254,14 +277,6 @@
                 return "#ED61A5";
 
             }
-        }
-
-        //update visualisation when the slider moves
-        function updateVisualization() {
-
-            var selectedYear = yearValues[d3.select("#slider-time").property("value")];
-
-            makeVisualization(selectedYear);
         }
     </script>
 
