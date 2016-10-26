@@ -11,9 +11,12 @@
 </head>
 
 <body>
+    <div>start/stop</div>
 
     <div id="slider"></div>
+
     <div id="visualization-div"></div>
+
 
     <script type="text/javascript">
         var dataset;
@@ -30,6 +33,7 @@
         var svg;
         var yearSlider;
         var yearValues;
+        var autoplay;
 
         d3.csv("Gapminder_All_Time.csv", function (error, data) {
             if (error) {
@@ -189,7 +193,7 @@
                     .style("fill", "rgba(0, 0, 0, 0.3)");
 
                 //Generate visualisation
-                makeVisualization(yearValues[0]);
+                lauchAutoplay();
             }
 
         });
@@ -321,9 +325,20 @@
             }
         }
 
+        //generates autoplay!
+        function lauchAutoplay() {
+            var i = yearSlider.value();
+            autoplay = setInterval(function () {
+                i += 1;
+                moveSlider(i % yearSlider.max());
+                makeVisualization(yearValues[yearSlider.value()]);
+            }, 700);
+        }
+
+
+        //moves the slider handler and updates visualization
         function moveSlider(newVal) {
             yearSlider.value(newVal);
-            makeVisualization(yearValues[yearSlider.value()]);
         }
     </script>
 
