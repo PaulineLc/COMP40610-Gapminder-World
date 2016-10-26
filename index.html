@@ -12,6 +12,9 @@
 
 <body>
 
+    <div id="slider"></div>
+    <div id="visualization-div"></div>
+
     <script type="text/javascript">
         var dataset;
         var height = 600;
@@ -34,7 +37,11 @@
             } else {
                 console.log("Data successfully loaded");
 
+                //Below we will create the barebones of the canvas
+                //Axis, scales, core svg elements...
+
                 //Create xScale
+                //Mapped to the GDP of each country
                 xScale = d3.scale.log()
                     .domain([d3.min(data,
                             function (d) {
@@ -47,6 +54,7 @@
                     .range([padding, width - padding * 2]);
 
                 //creates yScale
+                //mapped to the life expectancy of each country
                 yScale = d3.scale.linear()
                     .domain([d3.min(data,
                             function (d) {
@@ -59,6 +67,7 @@
                     .range([height - padding, padding]);
 
                 //create rscale
+                //mapped to the population of each country
                 rScale = d3.scale.linear()
                     .domain([d3.min(data,
                             function (d) {
@@ -72,12 +81,14 @@
 
 
                 //Create dataset with year as keys
+                //For more convenient access to yearly data
                 dataset = d3.nest()
                     .key(function (d) {
                         return d.Year
                     })
                     .sortKeys(d3.ascending)
                     .map(data);
+
 
                 //Create Year slider
                 //get all unique years
@@ -89,11 +100,11 @@
                     yearValues[i] = +yearValues[i];
                 };
                 //sort years (just in case)
+                //This is so that index 0 store the first year available
+                //and the last index stores the data of the most recent year
                 yearValues.sort()
 
-                yearSlider = d3.select("body")
-                    .append("div")
-                    .attr("width", "200px")
+                yearSlider = d3.select("#slider")
                     .call(d3.slider()
                         .axis(true)
                         .min(0)
@@ -117,13 +128,51 @@
                     .orient("left")
                     .ticks(5);
 
-
                 //Create svg
-                svg = d3.select("body")
+                svg = d3.select("#visualization-div")
                     .append("svg")
                     .attr("width", width)
                     .attr("height", height)
                     .attr("id", "gapmindersvg");
+
+                //Create background for the visualization
+                svg.append("rect")
+                    .attr("x", padding)
+                    .attr("y", height - (height - 60) - padding)
+                    .attr("width", width - 89)
+                    .attr("height", height - 60)
+                    .style("fill", "#fcfcfc");
+
+                //Append svg with the X axis
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height - padding) + ")")
+                    .call(xAxis)
+                    .call(xAxis);
+
+                //Append svg with the Y axis
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(yAxis);
+
+                //Append svg with the X grid
+                svg.append("g")
+                    .attr("class", "grid")
+                    .attr("transform", "translate(0," + (height - padding) + ")")
+                    .call(xAxis
+                        .tickSize(-(height - 60), 0, 0)
+                        .tickFormat("")
+                    )
+
+                //Append SVG with the Y grid
+                svg.append("g")
+                    .attr("class", "grid")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(yAxis
+                        .tickSize(-(width - 89), 0, 0)
+                        .tickFormat("")
+                    )
 
                 //Display current year
                 svg.append("text")
@@ -131,23 +180,11 @@
                     .attr("id", "currentyeardiplsayed")
                     .attr("x", 59)
                     .attr("y", 70)
+                    .style("z-index", 8)
                     .style("font-size", "48px")
                     .style("fill", "rgba(0, 0, 0, 0.3)");
 
-                //Create X axis
-                svg.append("g")
-                    .attr("class", "axis")
-                    .attr("transform", "translate(0," + (height - padding) + ")")
-                    .call(xAxis)
-                    .call(xAxis);
-
-                //Create Y axis
-                svg.append("g")
-                    .attr("class", "axis")
-                    .attr("transform", "translate(" + padding + ",0)")
-                    .call(yAxis);
-
-                //Make the visualisation
+                //Generate visualisation
                 makeVisualization(yearValues[0]);
             }
 
