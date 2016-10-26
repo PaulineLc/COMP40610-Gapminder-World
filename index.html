@@ -102,17 +102,21 @@
                 //sort years (just in case)
                 //This is so that index 0 store the first year available
                 //and the last index stores the data of the most recent year
-                yearValues.sort()
+                yearValues.sort();
 
-                yearSlider = d3.select("#slider")
-                    .call(d3.slider()
-                        .axis(true)
-                        .min(0)
-                        .max(yearValues.length - 1)
-                        .step(1)
-                        .on("slide", function (evt, value) {
-                            makeVisualization(yearValues[value])
-                        }));
+                //create slider
+                yearSlider = d3.slider()
+                    .axis(true)
+                    .min(0)
+                    .max(yearValues.length - 1)
+                    .step(1)
+                    .on("slide", function (evt, value) {
+                        makeVisualization(yearValues[value])
+                    });
+
+                //add slider to the page
+                d3.select("#slider")
+                    .call(yearSlider);
 
                 // create X axis
                 xAxis = d3.svg.axis()
@@ -315,6 +319,11 @@
                 return "#ED61A5";
 
             }
+        }
+
+        function moveSlider(newVal) {
+            yearSlider.value(newVal);
+            makeVisualization(yearValues[yearSlider.value()]);
         }
     </script>
 
