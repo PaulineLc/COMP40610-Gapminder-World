@@ -39,6 +39,20 @@ svg {
     margin: auto;
 }
 
+#header-wrapper {
+    /*            border: 2px solid blue;*/
+}
+
+#player {
+    /*            border: 2px solid green;*/
+    float: left;
+    margin-left: 10%;
+}
+
+#slider-wrapper {
+    /*            border: 2px solid red;*/
+}
+
 
 /*Inspiration for the below*/
 

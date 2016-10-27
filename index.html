@@ -12,7 +12,14 @@
 
 <body>
 
-    <div id="slider"></div>
+    <div id="header-wrapper">
+
+        <div id="player"><img id="play-button" src="img/play.png" width="18px" onclick="controlAutoplay()"></div>
+        <div id="slider-wrapper">
+            <div id="slider"></div>
+        </div>
+
+    </div>
 
     <div id="visualization-div"></div>
 
@@ -192,18 +199,6 @@
                     .style("font-size", "48px")
                     .style("fill", "rgba(0, 0, 0, 0.3)");
 
-                //Create background for the visualization
-                svg.append("rect")
-                    .attr("id", "play-stop")
-                    .attr("x", padding)
-                    .attr("y", height - (height - 60) - padding)
-                    .attr("width", 5)
-                    .attr("height", 5)
-                    .style("fill", "blue")
-                    .on("click", function (d) {
-                        controlAutoplay();
-                    });
-
                 //Generate visualisation
                 lauchAutoplay();
             }
@@ -338,10 +333,13 @@
         }
 
         function controlAutoplay() {
+            img = document.getElementById("play-button");
             if (autoplaying) {
+                img.src = "img/pause.png";
                 autoplaying = false;
                 clearInterval(autoplay);
             } else {
+                img.src = "img/play.png";
                 autoplaying = true;
                 lauchAutoplay();
             }
