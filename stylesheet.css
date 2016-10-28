@@ -1,3 +1,9 @@
+/*General CSS*/
+
+body {
+    background-color: #e2edff;
+}
+
 div.bar {
     display: inline-block;
     width: 20px;
@@ -6,6 +12,39 @@ div.bar {
     background-color: teal;
     margin-right: 2px;
 }
+
+svg {
+    display: block;
+    margin: auto;
+}
+
+
+/*player/slider CSS*/
+
+#slider {
+    margin: auto;
+    width: 70%;
+}
+
+#player {
+    float: left;
+    margin-left: 10%;
+}
+
+.d3-slider-horizontal {
+    background-color: whitesmoke;
+}
+
+
+/*Visualisation area CSS*/
+
+#visualization-div {
+    margin: auto;
+    text-align: center;
+}
+
+
+/*Axis CSS*/
 
 .axis path,
 .axis line {
@@ -19,38 +58,32 @@ div.bar {
     font-size: 11px;
 }
 
+
+/*Other elements*/
+
 .selectedCountry {
-    font-family: 'Droid Sans Mono', monospace;
+    font-family: 'Libre Franklin', sans-serif;
     font-size: 48px;
 }
 
-#slider {
-    margin: auto;
-    width: 70%;
+#currentyeardiplsayed {
+    font-size: 48px;
+    fill: #A9A9A9;
 }
 
-#visualization-div {
-    margin: auto;
-    text-align: center;
+.axe-label-strong {
+    font-family: 'Abhaya Libre', serif;
+    font-size: 24px;
+    text-transform: uppercase;
 }
 
-svg {
-    display: block;
-    margin: auto;
+.axe-label-mid {
+    font-size: 10px;
+    font-family: 'Abhaya Libre', serif;
 }
 
-#header-wrapper {
-    /*            border: 2px solid blue;*/
-}
-
-#player {
-    /*            border: 2px solid green;*/
-    float: left;
-    margin-left: 10%;
-}
-
-#slider-wrapper {
-    /*            border: 2px solid red;*/
+.country-details {
+    font-size: 14px;
 }
 
 
@@ -58,6 +91,9 @@ svg {
 
 
 /*http://www.d3noob.org/2013/01/adding-grid-lines-to-d3js-graph.html*/
+
+
+/*grid CSS*/
 
 .grid .tick {
     stroke: #efefef;

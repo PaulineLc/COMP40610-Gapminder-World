@@ -8,6 +8,9 @@
     <script type="text/javascript" src="d3/d3.slider.js"></script>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
     <link rel="stylesheet" href="d3/d3.slider.css" />
+    <link href="https://fonts.googleapis.com/css?family=Libre+Franklin" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Abhaya+Libre" rel="stylesheet">
+
 </head>
 
 <body>
@@ -19,16 +22,17 @@
             <div id="slider"></div>
         </div>
 
+        <div style="text-align:center;">
+            <div id="visualization-div"></div>
+        </div>
+
     </div>
-
-    <div id="visualization-div"></div>
-
 
     <script type="text/javascript">
         var dataset;
-        var height = 600;
+        var height = 640;
         var width = 1250;
-        var padding = 30;
+        var padding = 50;
         var xScale;
         var yScale;
         var rScale;
@@ -153,9 +157,9 @@
                 //Create background for the visualization
                 svg.append("rect")
                     .attr("x", padding)
-                    .attr("y", height - (height - 60) - padding)
-                    .attr("width", width - 89)
-                    .attr("height", height - 60)
+                    .attr("y", 100 - padding)
+                    .attr("width", width - 150)
+                    .attr("height", height - 100)
                     .style("fill", "#fcfcfc");
 
                 //Append svg with the X axis
@@ -165,18 +169,50 @@
                     .call(xAxis)
                     .call(xAxis);
 
+                //add X label
+                svg.append("text")
+                    .text("income per person")
+                    .attr("class", "axe-label-strong")
+                    .attr("x", (width / 2))
+                    .attr("y", height - 15)
+                    .attr("text-anchor", "middle");
+
+                svg.append("text")
+                    .text("in USDollars (GDP/capita, PPP$ infation adjusted, log scale)")
+                    .attr("class", "axe-label-mid")
+                    .attr("x", (width / 2))
+                    .attr("y", height - 5)
+                    .attr("text-anchor", "middle");
+
                 //Append svg with the Y axis
                 svg.append("g")
                     .attr("class", "axis")
                     .attr("transform", "translate(" + padding + ",0)")
                     .call(yAxis);
 
+                //add Y label
+                svg.append("text")
+                    .text("Life expectancy")
+                    .attr("class", "axe-label-strong")
+                    .attr("x", -(height / 2))
+                    .attr("y", 15)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(-90)");
+
+                svg.append("text")
+                    .text("in years")
+                    .attr("class", "axe-label-mid")
+                    .attr("x", -(height / 2))
+                    .attr("y", 25)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(-90)");
+
                 //Append svg with the X grid
                 svg.append("g")
                     .attr("class", "grid")
                     .attr("transform", "translate(0," + (height - padding) + ")")
                     .call(xAxis
-                        .tickSize(-(height - 60), 0, 0)
+                        .tickSize(-(height - 100), 0, 0)
                         .tickFormat("")
                     )
 
@@ -185,7 +221,7 @@
                     .attr("class", "grid")
                     .attr("transform", "translate(" + padding + ",0)")
                     .call(yAxis
-                        .tickSize(-(width - 89), 0, 0)
+                        .tickSize(-(width - 150), 0, 0)
                         .tickFormat("")
                     )
 
@@ -193,11 +229,8 @@
                 svg.append("text")
                     .text(yearValues[0])
                     .attr("id", "currentyeardiplsayed")
-                    .attr("x", 59)
-                    .attr("y", 70)
-                    .style("z-index", 8)
-                    .style("font-size", "48px")
-                    .style("fill", "rgba(0, 0, 0, 0.3)");
+                    .attr("x", padding + 10)
+                    .attr("y", padding + 35);
 
                 //Generate visualisation
                 lauchAutoplay();
@@ -207,7 +240,24 @@
 
         function makeVisualization(year) {
 
-            var currYearData = dataset[year];
+            //get and sort the array.
+            //Why sorting? Because if it is not sorted then the "little bubbles"
+            //may get behind the "big bubbles"
+            //sorting ensures that the big bubbles are created first and the little bubbles last,
+            //so the little bubble appear in front of (and not below) the big bubbles
+            //It would have been nice to be able to manipulate their z-index
+            //but that isn't possible in an SVG.
+            var currYearData = dataset[year].sort(function (a, b) {
+                if (parseInt(a.Population) < parseInt(b.Population)) {
+                    return 1;
+                }
+
+                if (parseInt(a.Population) == parseInt(b.Population)) {
+                    return 0;
+                }
+
+                return -1;
+            })
 
             var country_bubbles = svg.selectAll("circle")
                 .data(currYearData, function key(d) {
@@ -268,13 +318,56 @@
                 .attr({
                     class: "selectedCountry",
                     // Create an id for text so we can select it later for removing on mouseout
-                    x: 1190,
-                    y: 550
+                    x: 1140,
+                    y: 575
                 })
-                .style("font-size", "48px")
                 .attr("text-anchor", "end")
                 .text(function () {
                     return d.Country;
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 500
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "Population: " +
+                        (parseInt(d.Population)).toLocaleString();
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 480
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "GDP: " +
+                        (parseInt(d.GDP)).toLocaleString() + "$";
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 460
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "Life expectancy: " + Math.round(d.LifeExp) + " years";
                 });
 
             svg.selectAll("circle")
@@ -296,10 +389,15 @@
                 .duration(200)
                 .remove();
 
+            d3.selectAll(".country-details")
+                .transition()
+                .duration(200)
+                .remove();
+
             svg.selectAll("circle")
                 .transition()
                 .duration(200)
-                .style("opacity", 1)
+                .style("opacity", 1);
         }
 
         // Pick a color for the country bubble
@@ -332,6 +430,7 @@
             }
         }
 
+        //turn autoplay on and off
         function controlAutoplay() {
             img = document.getElementById("play-button");
             if (autoplaying) {
@@ -349,9 +448,9 @@
         function lauchAutoplay() {
             var i = yearSlider.value();
             autoplay = setInterval(function () {
-                i += 1;
-                moveSlider(i % yearSlider.max());
+                moveSlider(i % (yearSlider.max() + 1));
                 makeVisualization(yearValues[yearSlider.value()]);
+                i += 1;
             }, 700);
         }
 
