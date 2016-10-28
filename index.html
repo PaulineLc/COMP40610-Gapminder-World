@@ -230,7 +230,7 @@
                     .text(yearValues[0])
                     .attr("id", "currentyeardiplsayed")
                     .attr("x", padding + 10)
-                    .attr("y", padding + 35);
+                    .attr("y", padding + 40);
 
                 //Generate visualisation
                 lauchAutoplay();
@@ -333,22 +333,7 @@
                     class: "country-details",
                     // Create an id for text so we can select it later for removing on mouseout
                     x: 1140,
-                    y: 500
-                })
-                .attr("text-anchor", "end")
-                .text(function () {
-                    return "Population: " +
-                        (parseInt(d.Population)).toLocaleString();
-                });
-
-            svg.append("text")
-                .transition()
-                .duration(500)
-                .attr({
-                    class: "country-details",
-                    // Create an id for text so we can select it later for removing on mouseout
-                    x: 1140,
-                    y: 480
+                    y: 460
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
@@ -363,7 +348,22 @@
                     class: "country-details",
                     // Create an id for text so we can select it later for removing on mouseout
                     x: 1140,
-                    y: 460
+                    y: 480
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "Population: " +
+                        (parseInt(d.Population)).toLocaleString();
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 500
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
