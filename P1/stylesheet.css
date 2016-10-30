@@ -1,0 +1,107 @@
+/*General CSS*/
+
+body {
+    background-color: #e2edff;
+}
+
+div.bar {
+    display: inline-block;
+    width: 20px;
+    height: 75px;
+    /* We'll override this later */
+    background-color: teal;
+    margin-right: 2px;
+}
+
+svg {
+    display: block;
+    margin: auto;
+}
+
+
+/*player/slider CSS*/
+
+#slider {
+    margin: auto;
+    width: 70%;
+}
+
+#player {
+    float: left;
+    margin-left: 10%;
+}
+
+.d3-slider-horizontal {
+    background-color: whitesmoke;
+}
+
+
+/*Visualisation area CSS*/
+
+#visualization-div {
+    margin: auto;
+    text-align: center;
+}
+
+
+/*Axis CSS*/
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+
+/*Other elements*/
+
+.selectedCountry {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 48px;
+}
+
+#currentyeardiplsayed {
+    font-size: 48px;
+    fill: #A9A9A9;
+}
+
+.axe-label-strong {
+    font-family: 'Abhaya Libre', serif;
+    font-size: 24px;
+    text-transform: uppercase;
+}
+
+.axe-label-mid {
+    font-size: 10px;
+    font-family: 'Abhaya Libre', serif;
+}
+
+.country-details {
+    font-size: 14px;
+    font-family: 'Libre Franklin', sans-serif;
+}
+
+
+/*Inspiration for the below*/
+
+
+/*http://www.d3noob.org/2013/01/adding-grid-lines-to-d3js-graph.html*/
+
+
+/*grid CSS*/
+
+.grid .tick {
+    stroke: #efefef;
+    opacity: 0.3;
+    z-index: -999;
+}
+
+.grid path {
+    stroke-width: 0;
+}

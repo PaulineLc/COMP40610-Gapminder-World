@@ -1,0 +1,466 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Gapminder World</title>
+    <script type="text/javascript" src="d3/d3.v3.js">
+    </script>
+    <script type="text/javascript" src="d3/d3.slider.js"></script>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <link rel="stylesheet" href="d3/d3.slider.css" />
+    <link href="https://fonts.googleapis.com/css?family=Libre+Franklin" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Abhaya+Libre" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div id="header-wrapper">
+
+        <div id="player"><img id="play-button" src="img/play.png" width="18px" onclick="controlAutoplay()"></div>
+        <div id="slider-wrapper">
+            <div id="slider"></div>
+        </div>
+
+        <div style="text-align:center;">
+            <div id="visualization-div"></div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        var dataset;
+        var height = 640;
+        var width = 1250;
+        var padding = 50;
+        var xScale;
+        var yScale;
+        var rScale;
+        var rRangeMin = 3;
+        var rRangeMax = 60;
+        var xAxis;
+        var yAxis;
+        var svg;
+        var yearSlider;
+        var yearValues;
+        var autoplay;
+        var autoplaying = true;
+
+        d3.csv("Gapminder_All_Time.csv", function (error, data) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log("Data successfully loaded");
+
+                //Below we will create the barebones of the canvas
+                //Axis, scales, core svg elements...
+
+                //Create xScale
+                //Mapped to the GDP of each country
+                xScale = d3.scale.log()
+                    .domain([d3.min(data,
+                            function (d) {
+                                return parseInt(d.GDP);
+                            }),
+                             d3.max(data,
+                            function (d) {
+                                return parseInt(d.GDP);
+                            })])
+                    .range([padding, width - padding * 2]);
+
+                //creates yScale
+                //mapped to the life expectancy of each country
+                yScale = d3.scale.linear()
+                    .domain([d3.min(data,
+                            function (d) {
+                                return parseFloat(d.LifeExp);
+                            }),
+                             d3.max(data,
+                            function (d) {
+                                return parseFloat(d.LifeExp);
+                            })])
+                    .range([height - padding, padding]);
+
+                //create rscale
+                //mapped to the population of each country
+                rScale = d3.scale.linear()
+                    .domain([d3.min(data,
+                            function (d) {
+                                return parseInt(d.Population);
+                            }),
+                             d3.max(data,
+                            function (d) {
+                                return parseInt(d.Population);
+                            })])
+                    .range([rRangeMin, rRangeMax]);
+
+
+                //Create dataset with year as keys
+                //For more convenient access to yearly data
+                dataset = d3.nest()
+                    .key(function (d) {
+                        return d.Year
+                    })
+                    .sortKeys(d3.ascending)
+                    .map(data);
+
+
+                //Create Year slider
+                //get all unique years
+                yearValues = d3.map(data, function (d) {
+                    return d.Year;
+                }).keys();
+                //get years as integer
+                for (var i = 0; i < yearValues.length; i++) {
+                    yearValues[i] = +yearValues[i];
+                };
+                //sort years (just in case)
+                //This is so that index 0 store the first year available
+                //and the last index stores the data of the most recent year
+                yearValues.sort();
+
+                //create slider
+                yearSlider = d3.slider()
+                    .axis(true)
+                    .min(0)
+                    .max(yearValues.length - 1)
+                    .step(1)
+                    .on("slide", function (evt, value) {
+                        makeVisualization(yearValues[value])
+                    });
+
+                //add slider to the page
+                d3.select("#slider")
+                    .call(yearSlider);
+
+                // create X axis
+                xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .tickFormat(function (d) {
+                        return xScale.tickFormat(8, d3.format(",d"))(d)
+                    });
+
+                //create Y axis
+                yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left")
+                    .ticks(5);
+
+                //Create svg
+                svg = d3.select("#visualization-div")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("id", "gapmindersvg");
+
+                //Create background for the visualization
+                svg.append("rect")
+                    .attr("x", padding)
+                    .attr("y", 100 - padding)
+                    .attr("width", width - 150)
+                    .attr("height", height - 100)
+                    .style("fill", "#fcfcfc");
+
+                //Append svg with the X axis
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (height - padding) + ")")
+                    .call(xAxis)
+                    .call(xAxis);
+
+                //add X label
+                svg.append("text")
+                    .text("income per person")
+                    .attr("class", "axe-label-strong")
+                    .attr("x", (width / 2))
+                    .attr("y", height - 15)
+                    .attr("text-anchor", "middle");
+
+                svg.append("text")
+                    .text("in USDollars (GDP/capita, PPP$ infation adjusted, log scale)")
+                    .attr("class", "axe-label-mid")
+                    .attr("x", (width / 2))
+                    .attr("y", height - 5)
+                    .attr("text-anchor", "middle");
+
+                //Append svg with the Y axis
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(yAxis);
+
+                //add Y label
+                svg.append("text")
+                    .text("Life expectancy")
+                    .attr("class", "axe-label-strong")
+                    .attr("x", -(height / 2))
+                    .attr("y", 15)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(-90)");
+
+                svg.append("text")
+                    .text("in years")
+                    .attr("class", "axe-label-mid")
+                    .attr("x", -(height / 2))
+                    .attr("y", 25)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(-90)");
+
+                //Append svg with the X grid
+                svg.append("g")
+                    .attr("class", "grid")
+                    .attr("transform", "translate(0," + (height - padding) + ")")
+                    .call(xAxis
+                        .tickSize(-(height - 100), 0, 0)
+                        .tickFormat("")
+                    )
+
+                //Append SVG with the Y grid
+                svg.append("g")
+                    .attr("class", "grid")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(yAxis
+                        .tickSize(-(width - 150), 0, 0)
+                        .tickFormat("")
+                    )
+
+                //Display current year
+                svg.append("text")
+                    .text(yearValues[0])
+                    .attr("id", "currentyeardiplsayed")
+                    .attr("x", padding + 10)
+                    .attr("y", padding + 40);
+
+                //Generate visualisation
+                lauchAutoplay();
+            }
+
+        });
+
+        function makeVisualization(year) {
+
+            //get and sort the array.
+            //Why sorting? Because if it is not sorted then the "little bubbles"
+            //may get behind the "big bubbles"
+            //sorting ensures that the big bubbles are created first and the little bubbles last,
+            //so the little bubble appear in front of (and not below) the big bubbles
+            //It would have been nice to be able to manipulate their z-index
+            //but that isn't possible in an SVG.
+            var currYearData = dataset[year].sort(function (a, b) {
+                if (parseInt(a.Population) < parseInt(b.Population)) {
+                    return 1;
+                }
+
+                if (parseInt(a.Population) == parseInt(b.Population)) {
+                    return 0;
+                }
+
+                return -1;
+            })
+
+            var country_bubbles = svg.selectAll("circle")
+                .data(currYearData, function key(d) {
+                    return d.Code
+                });
+
+            country_bubbles
+                .transition()
+                .duration(1000)
+                .attr("cx", function (d) {
+                    return xScale(d.GDP);
+                })
+                .attr("cy", function (d) {
+                    return yScale(d.LifeExp);
+                })
+                .attr("r", function (d) {
+                    return rScale(d.Population);
+                });
+
+            country_bubbles.enter()
+                .append("circle")
+                .attr("id", function (d) {
+                    return "circle-" + d.Code;
+                })
+                .on("mouseover", function (d) {
+                    displayCountryName(d);
+                })
+                .on("mouseout", function (d) {
+                    removeCountryName(d);
+                })
+                .attr("cx", function (d) {
+                    return xScale(d.GDP);
+                })
+                .attr("cy", function (d) {
+                    return yScale(d.LifeExp);
+                })
+                .attr("r", function (d) {
+                    return rScale(d.Population);
+                })
+                .style("stroke", "black")
+                .style("fill", function (d) {
+                    return color(d.Region);
+                });
+
+            country_bubbles.exit().remove();
+
+            d3.select("#currentyeardiplsayed")
+                .text(year);
+        }
+
+        //displayCountryName() and removeCountryName implemented with the help of:
+        //http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+        // Display country name when mouse is over the country bubble
+        function displayCountryName(d) {
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "selectedCountry",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 575
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return d.Country;
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 460
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "GDP: " +
+                        (parseInt(d.GDP)).toLocaleString() + "$";
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 480
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "Population: " +
+                        (parseInt(d.Population)).toLocaleString();
+                });
+
+            svg.append("text")
+                .transition()
+                .duration(500)
+                .attr({
+                    class: "country-details",
+                    // Create an id for text so we can select it later for removing on mouseout
+                    x: 1140,
+                    y: 500
+                })
+                .attr("text-anchor", "end")
+                .text(function () {
+                    return "Life expectancy: " + Math.round(d.LifeExp) + " years";
+                });
+
+            svg.selectAll("circle")
+                .transition()
+                .duration(500)
+                .style("opacity", 0.3)
+
+            d3.select("#circle-" + d.Code)
+                .transition()
+                .duration(100)
+                .style("opacity", 1);
+        }
+
+        //remove country name when mouse gets away from the vountry bubble
+        function removeCountryName(d) {
+            // Select text by id and then remove
+            d3.selectAll(".selectedCountry")
+                .transition()
+                .duration(200)
+                .remove();
+
+            d3.selectAll(".country-details")
+                .transition()
+                .duration(200)
+                .remove();
+
+            svg.selectAll("circle")
+                .transition()
+                .duration(200)
+                .style("opacity", 1);
+        }
+
+        // Pick a color for the country bubble
+        function color(region) {
+            switch (region) {
+            case "Asia":
+                return "#ED61A5";
+
+            case "Africa":
+                return "#3B8CCB";
+
+            case "Europe":
+                return "#FBB82A";
+
+            case "North America":
+                return "#71BF44";
+
+            case "South America":
+                return "#71BF44";
+
+            case "Australia":
+                return "#ED61A5";
+
+            case "Central America":
+                return "#71BF44";
+
+            case "Oceania":
+                return "#ED61A5";
+
+            }
+        }
+
+        //turn autoplay on and off
+        function controlAutoplay() {
+            img = document.getElementById("play-button");
+            if (autoplaying) {
+                img.src = "img/pause.png";
+                autoplaying = false;
+                clearInterval(autoplay);
+            } else {
+                img.src = "img/play.png";
+                autoplaying = true;
+                lauchAutoplay();
+            }
+        }
+
+        //generates autoplay!
+        function lauchAutoplay() {
+            var i = yearSlider.value();
+            autoplay = setInterval(function () {
+                moveSlider(i % (yearSlider.max() + 1));
+                makeVisualization(yearValues[yearSlider.value()]);
+                i += 1;
+            }, 700);
+        }
+
+
+        //moves the slider handler and updates visualization
+        function moveSlider(newVal) {
+            yearSlider.value(newVal);
+        }
+    </script>
+
+</body>
+
+</html>

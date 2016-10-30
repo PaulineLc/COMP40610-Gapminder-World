@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script data-require="d3@3.5.17" data-semver="3.5.17" src="https://d3js.org/d3.v3.min.js"></script>
+    <link rel="stylesheet" href="https://rawgit.com/MasterMaps/d3-slider/master/d3.slider.css" />
+    <script src="https://rawgit.com/MasterMaps/d3-slider/master/d3.slider.js"></script>
+    <link rel="stylesheet" href="stylesheet.css" />
+    <style>
+        #id1 {
+            /*            border: 2px solid blue;*/
+        }
+        
+        #id2 {
+            /*            border: 2px solid green;*/
+            float: left;
+            margin-left: 10%;
+        }
+        
+        #id3 {
+            /*            border: 2px solid red;*/
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="id1">
+
+        <div id="id2"><img id="play-button" src="img/play.png" width="18px" onclick="test()"></div>
+        <div id="id3">
+            <div id="slider"></div>
+        </div>
+
+    </div>
+
+    <script>
+        var slider = d3.slider()
+            .axis(true)
+            .min(0)
+            .max(50)
+            .step(1)
+            .on("slide", function (evt, value) {
+                console.log("woooooo");
+            });
+
+        d3.select('#slider').call(slider);
+
+        //        setInterval(function () {
+        //            slider.value(Math.random() * 100)
+        //        }, 2000);
+
+        function moveSlider(n) {
+            slider.value(n);
+        }
+
+        function test() {
+            console.log("in the func");
+            img = document.getElementById("play-button");
+            if (img.src.match("play.png")) {
+                console.log("in if");
+                img.src = "img/pause.png";
+            } else {
+                console.log("in else");
+                img.src = "img/play.png";
+            }
+        }
+    </script>
+</body>
+
+</html>
