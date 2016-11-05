@@ -47,7 +47,7 @@
         var autoplay;
         var autoplaying = true;
 
-        d3.csv("Gapminder_All_Time.csv", function (error, data) {
+        d3.csv("data/consolidated_data.csv", function (error, data) {
             if (error) {
                 console.log(error);
             } else {
@@ -58,14 +58,14 @@
 
                 //Create xScale
                 //Mapped to the GDP of each country
-                xScale = d3.scale.log()
+                xScale = d3.scale.linear()
                     .domain([d3.min(data,
                             function (d) {
-                                return parseInt(d.GDP);
+                                return parseFloat(d.Agriculture);
                             }),
                              d3.max(data,
                             function (d) {
-                                return parseInt(d.GDP);
+                                return parseFloat(d.Agriculture);
                             })])
                     .range([padding, width - padding * 2]);
 
@@ -74,11 +74,11 @@
                 yScale = d3.scale.linear()
                     .domain([d3.min(data,
                             function (d) {
-                                return parseFloat(d.LifeExp);
+                                return parseFloat(d.Fertility);
                             }),
                              d3.max(data,
                             function (d) {
-                                return parseFloat(d.LifeExp);
+                                return parseFloat(d.Fertility);
                             })])
                     .range([height - padding, padding]);
 
@@ -87,11 +87,11 @@
                 rScale = d3.scale.linear()
                     .domain([d3.min(data,
                             function (d) {
-                                return parseInt(d.Population);
+                                return parseInt(d.GDP);
                             }),
                              d3.max(data,
                             function (d) {
-                                return parseInt(d.Population);
+                                return parseInt(d.GDP);
                             })])
                     .range([rRangeMin, rRangeMax]);
 
@@ -104,7 +104,6 @@
                     })
                     .sortKeys(d3.ascending)
                     .map(data);
-
 
                 //Create Year slider
                 //get all unique years
@@ -249,16 +248,28 @@
             //It would have been nice to be able to manipulate their z-index
             //but that isn't possible in an SVG.
             var currYearData = dataset[year].sort(function (a, b) {
-                if (parseInt(a.Population) < parseInt(b.Population)) {
+                if (parseInt(a.GDP) < parseInt(b.GDP)) {
                     return 1;
                 }
 
-                if (parseInt(a.Population) == parseInt(b.Population)) {
+                if (parseInt(a.GDP) == parseInt(b.GDP)) {
                     return 0;
                 }
 
                 return -1;
-            })
+            });
+
+            rScale = d3.scale.linear()
+                .domain([d3.min(currYearData,
+                        function (d) {
+                            return parseFloat(d.GDP);
+                        }),
+                             d3.max(currYearData,
+                        function (d) {
+                            return parseFloat(d.GDP);
+                        })])
+                .range([rRangeMin, rRangeMax]);
+
 
             var country_bubbles = svg.selectAll("circle")
                 .data(currYearData, function key(d) {
@@ -270,13 +281,13 @@
                 .duration(700)
                 .ease("linear")
                 .attr("cx", function (d) {
-                    return xScale(d.GDP);
+                    return xScale(d.Agriculture);
                 })
                 .attr("cy", function (d) {
-                    return yScale(d.LifeExp);
+                    return yScale(d.Fertility);
                 })
                 .attr("r", function (d) {
-                    return rScale(d.Population);
+                    return rScale(d.GDP);
                 });
 
             country_bubbles.enter()
@@ -291,10 +302,10 @@
                     removeCountryName(d);
                 })
                 .attr("cx", function (d) {
-                    return xScale(d.GDP);
+                    return xScale(d.Agriculture);
                 })
                 .attr("cy", function (d) {
-                    return yScale(d.LifeExp);
+                    return yScale(d.Fertility);
                 })
                 .style("stroke", "black")
                 .style("fill", function (d) {
@@ -305,7 +316,7 @@
                 .duration(transitionDuration)
                 .ease("elastic")
                 .attr("r", function (d) {
-                    return rScale(d.Population);
+                    return rScale(d.GDP);
                 });
 
             country_bubbles.exit()
@@ -348,7 +359,7 @@
                 .attr("text-anchor", "end")
                 .text(function () {
                     return "GDP: " +
-                        (parseInt(d.GDP)).toLocaleString() + "$";
+                        (parseInt(d.Agriculture)).toLocaleString() + "$";
                 });
 
             svg.append("text")
@@ -363,7 +374,7 @@
                 .attr("text-anchor", "end")
                 .text(function () {
                     return "Population: " +
-                        (parseInt(d.Population)).toLocaleString();
+                        (parseInt(d.GDP)).toLocaleString();
                 });
 
             svg.append("text")
@@ -377,7 +388,7 @@
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return "Life expectancy: " + Math.round(d.LifeExp) + " years";
+                    return "Life expectancy: " + Math.round(d.Fertility) + " years";
                 });
 
             svg.selectAll("circle")
