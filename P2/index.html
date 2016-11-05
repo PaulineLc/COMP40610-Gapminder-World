@@ -58,24 +58,18 @@
 
                 //Create xScale
                 //Mapped to the GDP of each country
-                xScale = d3.scale.linear()
-                    .domain([d3.min(data,
-                            function (d) {
-                                return parseFloat(d.Agriculture);
-                            }),
-                             d3.max(data,
-                            function (d) {
-                                return parseFloat(d.Agriculture);
-                            })])
+                xScale = d3.scale.log()
+                    .domain([0.1, 100])
                     .range([padding, width - padding * 2]);
+
+                console.log(xScale.domain());
+                console.log(xScale.range());
+                console.log(xScale(71));
 
                 //creates yScale
                 //mapped to the life expectancy of each country
                 yScale = d3.scale.linear()
-                    .domain([d3.min(data,
-                            function (d) {
-                                return parseFloat(d.Fertility);
-                            }),
+                    .domain([0,
                              d3.max(data,
                             function (d) {
                                 return parseFloat(d.Fertility);
@@ -171,14 +165,14 @@
 
                 //add X label
                 svg.append("text")
-                    .text("income per person")
+                    .text("Agriculture")
                     .attr("class", "axe-label-strong")
                     .attr("x", (width / 2))
                     .attr("y", height - 15)
                     .attr("text-anchor", "middle");
 
                 svg.append("text")
-                    .text("in USDollars (GDP/capita, PPP$ infation adjusted, log scale)")
+                    .text("in USDollars (% of GDP, log scale)")
                     .attr("class", "axe-label-mid")
                     .attr("x", (width / 2))
                     .attr("y", height - 5)
@@ -192,7 +186,7 @@
 
                 //add Y label
                 svg.append("text")
-                    .text("Life expectancy")
+                    .text("Fertility rate")
                     .attr("class", "axe-label-strong")
                     .attr("x", -(height / 2))
                     .attr("y", 15)
@@ -200,7 +194,7 @@
                     .attr("transform", "rotate(-90)");
 
                 svg.append("text")
-                    .text("in years")
+                    .text("births per women")
                     .attr("class", "axe-label-mid")
                     .attr("x", -(height / 2))
                     .attr("y", 25)
@@ -281,6 +275,10 @@
                 .duration(700)
                 .ease("linear")
                 .attr("cx", function (d) {
+                    if (parseFloat(d.Agriculture) == 0) {
+                        console.log("in it");
+                        return Math.min.apply(null, xScale.range());
+                    }
                     return xScale(d.Agriculture);
                 })
                 .attr("cy", function (d) {
@@ -302,6 +300,9 @@
                     removeCountryName(d);
                 })
                 .attr("cx", function (d) {
+                    if (parseFloat(d.Agriculture) == 0) {
+                        rMath.min.apply(null, xScale.range());
+                    }
                     return xScale(d.Agriculture);
                 })
                 .attr("cy", function (d) {
@@ -359,7 +360,7 @@
                 .attr("text-anchor", "end")
                 .text(function () {
                     return "GDP: " +
-                        (parseInt(d.Agriculture)).toLocaleString() + "$";
+                        (parseInt(d.GDP)).toLocaleString() + "$";
                 });
 
             svg.append("text")
@@ -373,8 +374,8 @@
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return "Population: " +
-                        (parseInt(d.GDP)).toLocaleString();
+                    return "Agriculture (% of GDP): " +
+                        (Math.round(d.Agriculture * 100) / 100) + "%";
                 });
 
             svg.append("text")
@@ -388,7 +389,7 @@
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return "Life expectancy: " + Math.round(d.Fertility) + " years";
+                    return "Fertility rate: " + (Math.round(d.Fertility * 100) / 100);
                 });
 
             svg.selectAll("circle")
