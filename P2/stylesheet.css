@@ -88,6 +88,21 @@ svg {
 }
 
 
+/* map  div CSS*/
+
+#map-wrapper {
+    text-align: center;
+}
+
+#container1,
+#container2,
+#container3 {
+    margin: 0.5em;
+    display: inline-block;
+    position: relative;
+}
+
+
 /*Inspiration for the below*/
 
 

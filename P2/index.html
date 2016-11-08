@@ -6,6 +6,9 @@
     <script type="text/javascript" src="d3/d3.v3.js">
     </script>
     <script type="text/javascript" src="d3/d3.slider.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script type="text/javascript" src="d3/datamaps.js"></script>
+    <script type="application/javascript" src="d3/datamaps.world.js"></script>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
     <link rel="stylesheet" href="d3/d3.slider.css" />
     <link href="https://fonts.googleapis.com/css?family=Libre+Franklin" rel="stylesheet">
@@ -27,6 +30,11 @@
         </div>
 
     </div>
+    <div id="map-wrapper">
+        <div id="container1"></div>
+        <div id="container2"></div>
+        <div id="container3"></div>
+    </div>
 
     <script type="text/javascript">
         var dataset;
@@ -38,7 +46,7 @@
         var yScale;
         var rScale;
         var rRangeMin = 3;
-        var rRangeMax = 60;
+        var rRangeMax = 30;
         var xAxis;
         var yAxis;
         var svg;
@@ -155,6 +163,15 @@
                     .attr("width", width - 150)
                     .attr("height", height - 100)
                     .style("fill", "#fcfcfc");
+
+                //create clip path
+                svg.append("clipPath")
+                    .attr("id", "clippath")
+                    .append("rect")
+                    .attr("x", padding)
+                    .attr("y", 100 - padding)
+                    .attr("width", width - 150)
+                    .attr("height", height - 100);
 
                 //Append svg with the X axis
                 svg.append("g")
@@ -275,8 +292,7 @@
                 .duration(700)
                 .ease("linear")
                 .attr("cx", function (d) {
-                    if (parseFloat(d.Agriculture) == 0) {
-                        console.log("in it");
+                    if (parseFloat(d.Agriculture) < 0.1) {
                         return Math.min.apply(null, xScale.range());
                     }
                     return xScale(d.Agriculture);
@@ -290,6 +306,7 @@
 
             country_bubbles.enter()
                 .append("circle")
+                .attr("clip-path", "url(#clippath)")
                 .attr("id", function (d) {
                     return "circle-" + d.Code;
                 })
@@ -300,8 +317,8 @@
                     removeCountryName(d);
                 })
                 .attr("cx", function (d) {
-                    if (parseFloat(d.Agriculture) == 0) {
-                        rMath.min.apply(null, xScale.range());
+                    if (parseFloat(d.Agriculture) < 0.1) {
+                        return Math.min.apply(null, xScale.range());
                     }
                     return xScale(d.Agriculture);
                 })
@@ -472,6 +489,7 @@
             autoplay = setInterval(function () {
                 moveSlider(i % (yearSlider.max() + 1));
                 makeVisualization(yearValues[yearSlider.value()]);
+                updateMap(yearValues[yearSlider.value()]);
                 i += 1;
             }, 700);
         }
@@ -480,6 +498,59 @@
         //moves the slider handler and updates visualization
         function moveSlider(newVal) {
             yearSlider.value(newVal);
+        }
+
+        //create map (no data -- all countries are grey)
+        var map1 = new Datamap({
+            scope: 'world',
+            element: document.getElementById('container1'),
+            projection: 'mercator',
+            width: 400,
+            height: 400,
+            fills: {
+                defaultFill: '#d3d3d3'
+            }
+        });
+
+        var map2 = new Datamap({
+            scope: 'world',
+            element: document.getElementById('container2'),
+            projection: 'mercator',
+            width: 400,
+            height: 400,
+            fills: {
+                defaultFill: '#d3d3d3'
+            }
+        });
+
+        var map3 = new Datamap({
+            scope: 'world',
+            element: document.getElementById('container3'),
+            projection: 'mercator',
+            width: 400,
+            height: 400,
+            fills: {
+                defaultFill: '#d3d3d3'
+            }
+        });
+
+        function updateMap(year) {
+
+            map1.updateChoropleth(null, {
+                reset: true
+            });
+
+            var myArray = dataset[year].map(function (d) {
+                return d.Code;
+            });
+
+            var myDic = {}
+
+            myArray.forEach(function (country) {
+                myDic[country] = "#C404CB"
+            });
+
+            map1.updateChoropleth(myDic);
         }
     </script>
 
