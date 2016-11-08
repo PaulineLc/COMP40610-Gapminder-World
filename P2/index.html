@@ -20,7 +20,7 @@
 
     <div id="header-wrapper">
 
-        <div id="player"><img id="play-button" src="img/play.png" width="18px" onclick="controlAutoplay()"></div>
+        <div id="player"><img id="play-button" src="img/pause.png" width="18px" onclick="controlAutoplay()"></div>
         <div id="slider-wrapper">
             <div id="slider"></div>
         </div>
@@ -54,6 +54,12 @@
         var yearValues;
         var autoplay;
         var autoplaying = true;
+        var minFertility;
+        var maxFertility;
+        var minGDP;
+        var maxGDP;
+        var minAgri;
+        var maxAgri;
 
         d3.csv("data/consolidated_data.csv", function (error, data) {
             if (error) {
@@ -69,10 +75,6 @@
                 xScale = d3.scale.log()
                     .domain([0.1, 100])
                     .range([padding, width - padding * 2]);
-
-                console.log(xScale.domain());
-                console.log(xScale.range());
-                console.log(xScale(71));
 
                 //creates yScale
                 //mapped to the life expectancy of each country
@@ -97,6 +99,36 @@
                             })])
                     .range([rRangeMin, rRangeMax]);
 
+
+                minFertility = d3.min(data,
+                    function (d) {
+                        return parseFloat(d.Fertility);
+                    });
+
+                maxFertility = d3.max(data,
+                    function (d) {
+                        return parseFloat(d.Fertility);
+                    })
+
+                minGDP = d3.min(data,
+                    function (d) {
+                        return parseFloat(d.GDP);
+                    });
+
+                maxGDP = d3.max(data,
+                    function (d) {
+                        return parseFloat(d.GDP);
+                    });
+
+                minAgri = d3.min(data,
+                    function (d) {
+                        return parseFloat(d.Agriculture);
+                    });
+
+                maxAgri = d3.max(data,
+                    function (d) {
+                        return parseFloat(d.Agriculture);
+                    });
 
                 //Create dataset with year as keys
                 //For more convenient access to yearly data
@@ -473,11 +505,11 @@
         function controlAutoplay() {
             img = document.getElementById("play-button");
             if (autoplaying) {
-                img.src = "img/pause.png";
+                img.src = "img/play.png";
                 autoplaying = false;
                 clearInterval(autoplay);
             } else {
-                img.src = "img/play.png";
+                img.src = "img/pause.png";
                 autoplaying = true;
                 lauchAutoplay();
             }
@@ -541,16 +573,41 @@
             });
 
             var myArray = dataset[year].map(function (d) {
-                return d.Code;
+                return [d.Code, d.Fertility, d.GDP, d.Agriculture];
             });
 
-            var myDic = {}
+            var dicMap1 = {};
+            var dicMap2 = {};
+            var dicMap3 = {};
 
             myArray.forEach(function (country) {
-                myDic[country] = "#C404CB"
+                dicMap1[country[0]] = pickColorIntensity("fertility", country[1]);
+                dicMap2[country[0]] = pickColorIntensity("GDP", country[2]);
+                dicMap3[country[0]] = pickColorIntensity("Agri", country[3]);
             });
 
-            map1.updateChoropleth(myDic);
+            map1.updateChoropleth(dicMap1);
+            map2.updateChoropleth(dicMap2);
+            map3.updateChoropleth(dicMap3);
+        }
+
+
+        function pickColorIntensity(type, value) {
+            if (type == "fertility") {
+                var a = (value - minFertility) / (maxFertility - minFertility);
+
+                return "rgba(255, 0, 0, " + a + ")";
+            }
+
+            if (type == "GDP") {
+                var a = (value - minGDP) / (maxGDP - minGDP);
+                return "rgba(0,255,0, " + a + ")";
+            }
+
+            if (type == "Agri") {
+                var a = (value - minAgri) / (maxAgri - minAgri);
+                return "rgba(0,0,255," + a + ")";
+            }
         }
     </script>
 
