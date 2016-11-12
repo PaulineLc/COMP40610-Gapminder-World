@@ -13,30 +13,50 @@
     <link rel="stylesheet" href="d3/d3.slider.css" />
     <link href="https://fonts.googleapis.com/css?family=Libre+Franklin" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Abhaya+Libre" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
+
 
 </head>
 
 <body>
 
-    <div id="header-wrapper">
+    <h1>Income, agriculture and fertility: how the world shifted in the past 55 years</h1>
 
-        <div id="player"><img id="play-button" src="img/pause.png" width="18px" onclick="controlAutoplay()"></div>
-        <div id="slider-wrapper">
-            <div id="slider"></div>
-        </div>
+    <div id="header-wrapper">
 
         <div style="text-align:center;">
             <div id="visualization-div"></div>
         </div>
 
     </div>
+
+    <div class="spacer"> </div>
+
+    <div id="player"><img id="play-button" src="img/pause.png" width="18px" onclick="controlAutoplay()"></div>
+    <div id="slider-wrapper">
+        <div id="slider"></div>
+    </div>
+
+    <div class="spacer"></div>
+
     <div id="map-wrapper">
-        <div id="container1"></div>
-        <div id="container2"></div>
-        <div id="container3"></div>
+        <div id="container1">
+            <h2>Births per woman</h2>
+            <p>(<span class="low">low fertility</span>, <span class="high">high fertility</span>)</p>
+
+        </div>
+        <div id="container2">
+            <h2>Income per person</h2>
+            <p>(<span class="low">low income</span>, <span class="high">high income</span>)</p>
+        </div>
+        <div id="container3">
+            <h2>Agriculture (value-added,  % GDP)</h2>
+            <p>(<span class="low">low percentage</span>, <span class="high">high percentage</span>)</p>
+        </div>
     </div>
 
     <script type="text/javascript">
+        // Global variables
         var dataset;
         var height = 640;
         var width = 1250;
@@ -45,6 +65,9 @@
         var xScale;
         var yScale;
         var rScale;
+        var GDPColorScale;
+        var AgriColorScale;
+        var FertilityColorScale;
         var rRangeMin = 3;
         var rRangeMax = 30;
         var xAxis;
@@ -54,12 +77,6 @@
         var yearValues;
         var autoplay;
         var autoplaying = true;
-        var minFertility;
-        var maxFertility;
-        var minGDP;
-        var maxGDP;
-        var minAgri;
-        var maxAgri;
 
         d3.csv("data/consolidated_data.csv", function (error, data) {
             if (error) {
@@ -83,13 +100,13 @@
                     .range([padding, width - padding * 2]);
 
                 //creates yScale
-                //mapped to the life expectancy of each country
+                //mapped to the size of the agriculture sector as a % of GDP of each country
                 yScale = d3.scale.linear()
-                    .domain([0.01, 100])
+                    .domain([0, 100])
                     .range([height - padding, padding]);
 
                 //create rscale
-                //mapped to the population of each country
+                //mapped to the fertility of each country
                 rScale = d3.scale.linear()
                     .domain([d3.min(data, function (d) {
                         return parseFloat(d.Fertility);
@@ -98,7 +115,7 @@
                     })])
                     .range([rRangeMin, rRangeMax]);
 
-
+                // get max and min data for the fertility, GDO and Agriculture%
                 minFertility = d3.min(data,
                     function (d) {
                         return parseFloat(d.Fertility);
@@ -128,6 +145,20 @@
                     function (d) {
                         return parseFloat(d.Agriculture);
                     });
+
+                // Create scale to set the color on the maps
+
+                AgriColorScale = d3.scale.linear()
+                    .domain([minAgri, maxAgri])
+                    .range([255, 0]);
+
+                GDPColorScale = d3.scale.log()
+                    .domain([minGDP, maxGDP])
+                    .range([255, 0]);
+
+                FertilityColorScale = d3.scale.linear()
+                    .domain([minFertility, maxFertility])
+                    .range([255, 0]);
 
                 //Create dataset with year as keys
                 //For more convenient access to yearly data
@@ -159,7 +190,8 @@
                     .max(yearValues.length - 1)
                     .step(1)
                     .on("slide", function (evt, value) {
-                        makeVisualization(yearValues[value])
+                        makeVisualization(yearValues[value]);
+                        updateMap(yearValues[value]);
                     });
 
                 //add slider to the page
@@ -213,14 +245,14 @@
 
                 //add X label
                 svg.append("text")
-                    .text("Agriculture")
+                    .text("Income per person")
                     .attr("class", "axe-label-strong")
                     .attr("x", (width / 2))
                     .attr("y", height - 15)
                     .attr("text-anchor", "middle");
 
                 svg.append("text")
-                    .text("in USDollars (% of GDP, log scale)")
+                    .text("in USDollars (GDP/capita, PPP$ infation adjusted, log scale)")
                     .attr("class", "axe-label-mid")
                     .attr("x", (width / 2))
                     .attr("y", height - 5)
@@ -234,7 +266,7 @@
 
                 //add Y label
                 svg.append("text")
-                    .text("Fertility rate")
+                    .text("Agriculture (% of GDP)")
                     .attr("class", "axe-label-strong")
                     .attr("x", -(height / 2))
                     .attr("y", 15)
@@ -242,7 +274,7 @@
                     .attr("transform", "rotate(-90)");
 
                 svg.append("text")
-                    .text("births per women")
+                    .text("value-added in USDollar")
                     .attr("class", "axe-label-mid")
                     .attr("x", -(height / 2))
                     .attr("y", 25)
@@ -271,13 +303,13 @@
                 svg.append("text")
                     .text(yearValues[0])
                     .attr("id", "currentyeardiplsayed")
-                    .attr("x", width - 200)
-                    .attr("y", padding + 40);
+                    .attr("x", width - 220)
+                    .attr("y", padding + 55);
 
                 // Africa label below year
                 svg.append("rect")
-                    .attr("x", width - 195)
-                    .attr("y", padding + 50)
+                    .attr("x", width - 210) //was 195 (added 15)
+                    .attr("y", padding + 65) //was 50 (added 15)
                     .attr("width", 10)
                     .attr("height", 10)
                     .style("fill", "#3B8CCB")
@@ -286,14 +318,14 @@
                 svg.append("text")
                     .attr("class", "data-label")
                     .text("Africa")
-                    .attr("x", width - 180)
-                    .attr("y", padding + 60)
+                    .attr("x", width - 195)
+                    .attr("y", padding + 75)
 
 
                 //Asia label below year
                 svg.append("rect")
-                    .attr("x", width - 195)
-                    .attr("y", padding + 65)
+                    .attr("x", width - 210)
+                    .attr("y", padding + 80)
                     .attr("width", 10)
                     .attr("height", 10)
                     .style("fill", "#ED61A5")
@@ -302,14 +334,14 @@
                 svg.append("text")
                     .attr("class", "data-label")
                     .text("Asia")
-                    .attr("x", width - 180)
-                    .attr("y", padding + 75)
+                    .attr("x", width - 195)
+                    .attr("y", padding + 90)
 
 
                 //Europe label below year
                 svg.append("rect")
-                    .attr("x", width - 195)
-                    .attr("y", padding + 80)
+                    .attr("x", width - 210)
+                    .attr("y", padding + 95)
                     .attr("width", 10)
                     .attr("height", 10)
                     .style("fill", "#FBB82A")
@@ -318,13 +350,13 @@
                 svg.append("text")
                     .attr("class", "data-label")
                     .text("Europe")
-                    .attr("x", width - 180)
-                    .attr("y", padding + 90);
+                    .attr("x", width - 195)
+                    .attr("y", padding + 105);
 
                 //American label below year
                 svg.append("rect")
-                    .attr("x", width - 195)
-                    .attr("y", padding + 95)
+                    .attr("x", width - 210)
+                    .attr("y", padding + 110)
                     .attr("width", 10)
                     .attr("height", 10)
                     .style("fill", "#71BF44")
@@ -333,40 +365,42 @@
                 svg.append("text")
                     .attr("class", "data-label")
                     .text("America")
-                    .attr("x", width - 180)
-                    .attr("y", padding + 105);
+                    .attr("x", width - 195)
+                    .attr("y", padding + 120);
 
 
                 //Bubble size label below year
                 svg.append("ellipse") // using ellipse otherwise element is selected by selectAll("circle")
-                    .attr("cx", width - 190)
-                    .attr("cy", padding + 115)
+                    .attr("cx", width - 205)
+                    .attr("cy", padding + 140)
                     .attr("rx", 4)
                     .attr("ry", 4)
                     .style("fill", "black");
 
                 svg.append("text")
                     .attr("class", "data-label")
-                    .text("low fertility")
-                    .attr("x", width - 180)
-                    .attr("y", padding + 120)
+                    .text("lower fertility")
+                    .attr("x", width - 190)
+                    .attr("y", padding + 145)
 
 
                 svg.append("ellipse")
-                    .attr("cx", width - 191)
-                    .attr("cy", padding + 135)
+                    .attr("cx", width - 205)
+                    .attr("cy", padding + 155)
                     .attr("rx", 10)
                     .attr("ry", 10)
                     .style("fill", "black");
 
                 svg.append("text")
                     .attr("class", "data-label")
-                    .text("high fertility")
-                    .attr("x", width - 180)
-                    .attr("y", padding + 140)
+                    .text("higher fertility")
+                    .attr("x", width - 190)
+                    .attr("y", padding + 160)
+
+                //
 
                 //Generate visualisation
-                lauchAutoplay();
+                launchAutoplay();
             }
 
         });
@@ -396,9 +430,6 @@
                 .duration(700)
                 .ease("linear")
                 .attr("cx", function (d) {
-                    if (parseFloat(d.Agriculture) < 0.1) {
-                        return Math.min.apply(null, xScale.range());
-                    }
                     return xScale(d.GDP);
                 })
                 .attr("cy", function (d) {
@@ -424,8 +455,6 @@
                     return xScale(d.GDP);
                 })
                 .attr("cy", function (d) {
-                    console.log(d.Agriculture);
-                    console.log(yScale(d.Agriculture));
                     return yScale(d.Agriculture);
                 })
                 .style("stroke", "black")
@@ -460,12 +489,12 @@
                 .attr({
                     class: "selectedCountry",
                     // Create an id for text so we can select it later for removing on mouseout
-                    x: 1140,
-                    y: 575
+                    x: 1025,
+                    y: 105
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return d.Country;
+                    return d.Country + " |";
                 });
 
             svg.append("text")
@@ -474,12 +503,12 @@
                 .attr({
                     class: "country-details",
                     // Create an id for text so we can select it later for removing on mouseout
-                    x: 1140,
-                    y: 460
+                    x: 1020,
+                    y: 140
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return "GDP: " +
+                    return "Income per person: " +
                         (parseInt(d.GDP)).toLocaleString() + "$";
                 });
 
@@ -489,13 +518,13 @@
                 .attr({
                     class: "country-details",
                     // Create an id for text so we can select it later for removing on mouseout
-                    x: 1140,
-                    y: 480
+                    x: 1020,
+                    y: 155
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return "Agriculture (% of GDP): " +
-                        (Math.round(d.Agriculture * 100) / 100) + "%";
+                    return "Agriculture: " +
+                        (Math.round(d.Agriculture * 100) / 100) + "% of GDP";
                 });
 
             svg.append("text")
@@ -504,12 +533,12 @@
                 .attr({
                     class: "country-details",
                     // Create an id for text so we can select it later for removing on mouseout
-                    x: 1140,
-                    y: 500
+                    x: 1020,
+                    y: 170
                 })
                 .attr("text-anchor", "end")
                 .text(function () {
-                    return "Fertility rate: " + (Math.round(d.Fertility * 100) / 100);
+                    return "Birth per woman (fertility rate): " + (Math.round(d.Fertility * 100) / 100);
                 });
 
             svg.selectAll("circle")
@@ -582,12 +611,12 @@
             } else {
                 img.src = "img/pause.png";
                 autoplaying = true;
-                lauchAutoplay();
+                launchAutoplay();
             }
         }
 
         //generates autoplay!
-        function lauchAutoplay() {
+        function launchAutoplay() {
             var i = yearSlider.value();
             autoplay = setInterval(function () {
                 moveSlider(i % (yearSlider.max() + 1));
@@ -639,6 +668,7 @@
 
         function updateMap(year) {
 
+            //reset the maps
             map1.updateChoropleth(null, {
                 reset: true
             });
@@ -649,20 +679,24 @@
                 reset: true
             });
 
+            // create array of relevant data
             var myArray = dataset[year].map(function (d) {
                 return [d.Code, d.Fertility, d.GDP, d.Agriculture];
             });
 
+            // define new dictionaries
             var dicMap1 = {};
             var dicMap2 = {};
             var dicMap3 = {};
 
+            // add data to the dictionaries
             myArray.forEach(function (country) {
                 dicMap1[country[0]] = pickColorIntensity("fertility", country[1]);
                 dicMap2[country[0]] = pickColorIntensity("GDP", country[2]);
                 dicMap3[country[0]] = pickColorIntensity("Agri", country[3]);
             });
 
+            // update the maps
             map1.updateChoropleth(dicMap1);
             map2.updateChoropleth(dicMap2);
             map3.updateChoropleth(dicMap3);
@@ -671,26 +705,15 @@
 
         function pickColorIntensity(type, value) {
             if (type == "fertility") {
-                var a = (value - minFertility) / (maxFertility - minFertility);
-
-                var green = (1 - a) * 255;
-                var red = a * 255;
-
-                return "rgb(" + red + ", " + green + ", 0)";
+                return "rgb(0, " + FertilityColorScale(value) + ", 255)";
             }
 
             if (type == "GDP") {
-                var a = (value - minGDP) / (maxGDP - minGDP);
-                var green = a * 255;
-                var red = (1 - a) * 255;
-                return "rgb(" + red + ", " + green + ", 0)";
+                return "rgb(0, " + GDPColorScale(value) + ", 255)";
             }
 
             if (type == "Agri") {
-                var a = (value - minAgri) / (maxAgri - minAgri);
-                var green = a * 255;
-                var red = (1 - a) * 255;
-                return "rgb(" + red + ", " + green + ", 0)";
+                return "rgb(0, " + AgriColorScale(value) + ", 255)";
             }
         }
     </script>
