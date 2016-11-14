@@ -33,7 +33,7 @@ h2 {
 }
 
 .spacer {
-    height: 50px;
+    height: 10px;
 }
 
 
@@ -117,13 +117,12 @@ h2 {
     text-align: center;
 }
 
-#container1,
-#container2,
-#container3 {
+.map-div {
     margin: 0.5em;
     display: inline-block;
     position: relative;
     background-color: white;
+    border: 1px solid black;
 }
 
 
