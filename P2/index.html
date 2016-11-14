@@ -63,7 +63,7 @@
         var height = 640;
         var width = 1250;
         var padding = 50;
-        var transitionDuration = 700;
+        var transitionDuration = 900;
         var xScale;
         var yScale;
         var rScale;
@@ -429,7 +429,7 @@
 
             country_bubbles
                 .transition()
-                .duration(700)
+                .duration(transitionDuration)
                 .ease("linear")
                 .attr("cx", function (d) {
                     return xScale(d.GDP);

@@ -28,6 +28,8 @@
 
     </div>
 
+    <div id="selector">Select a country to add a highlight to it: </div>
+
     <script type="text/javascript">
         var dataset;
         var height = 640;
@@ -308,6 +310,85 @@
                     .attr("x", padding + 40)
                     .attr("y", padding + 172)
 
+                // add selector to pick a given country
+                //get all unique countries
+                var allCountries = d3.map(data, function (d) {
+                    return [d.Code, d.Country];
+                }).keys();
+
+                allCountries.sort();
+
+                //add this as default option
+                allCountries.splice(0, 0, "--no country selected--");
+
+                var selector = d3.select("#selector")
+                    .append("select");
+
+                selector
+                    .on("change", function (d) {
+                        var value = d3.select(this).property("value");
+                        console.log(value);
+                        highlightCountry(value);
+                    });
+
+                selector.selectAll("option")
+                    .data(allCountries)
+                    .enter()
+                    .append("option")
+                    .attr("value", function (d) {
+                        return d.split(",")[0];
+                    })
+                    .text(function (d) {
+                        return d.split(",")[1];
+                    });
+
+                //below, we define the "halo" and its colors.
+                //made with the help of:
+                //http://bl.ocks.org/cpbotha/5200394
+                //and:
+                //https://stackoverflow.com/questions/9630008/how-can-i-create-a-glow-around-a-rectangle-with-svg
+
+                // create a defs
+                var defs = svg.append("defs");
+
+                // add a filter to the defs
+                var filter = defs.append("filter")
+                    .attr("id", "drop-shadow")
+                    .attr("x", "-5000%")
+                    .attr("y", "-5000%")
+                    .attr("width", "10000%")
+                    .attr("height", "10000%")
+
+                // add a few fe-element to the filter
+                filter.append("feFlood")
+                    .attr("result", "flood")
+                    .attr("flood-color", "yellow")
+                    .attr("flood-opacity", "1");
+
+                filter.append("feComposite")
+                    .attr("in", "flood")
+                    .attr("result", "mask")
+                    .attr("in2", "SourceGraphic")
+                    .attr("operator", "in");
+
+                filter.append("feMorphology")
+                    .attr("in", "mask")
+                    .attr("result", "dilated")
+                    .attr("operator", "dilate")
+                    .attr("radius", "20");
+
+                filter.append("feGaussianBlur")
+                    .attr("in", "dilated")
+                    .attr("result", "blurred")
+                    .attr("stdDeviation", "20");
+
+                // create feMerge and add nodes
+                var feMerge = filter.append("feMerge");
+                feMerge.append("feMergeNode")
+                    .attr("in", "blurred")
+                feMerge.append("feMergeNode")
+                    .attr("in", "SourceGraphic");
+
                 //Generate visualisation
                 lauchAutoplay();
             }
@@ -543,6 +624,22 @@
         //moves the slider handler and updates visualization
         function moveSlider(newVal) {
             yearSlider.value(newVal);
+        }
+
+        function highlightCountry(countryCode) {
+
+            svg.selectAll("circle")
+                .style("filter", "")
+                .style("stroke", "black")
+                .style("stroke-width", "1px");
+
+            Countryid = "#circle-" + countryCode;
+
+            d3.select(Countryid)
+                .style("stroke", "#f97400")
+                .style("stroke-alignment", "outer")
+                .style("stroke-width", "1px")
+                .style("filter", "url(#drop-shadow)");
         }
     </script>
 
