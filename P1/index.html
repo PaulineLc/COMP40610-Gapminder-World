@@ -10,14 +10,16 @@
     <link rel="stylesheet" href="d3/d3.slider.css" />
     <link href="https://fonts.googleapis.com/css?family=Libre+Franklin" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Abhaya+Libre" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css?family=Cinzel|Open+Sans" rel="stylesheet">
 </head>
 
 <body>
 
+    <h1>GapMinder World 2015</h1>
+
     <div id="header-wrapper">
 
-        <div id="player"><img id="play-button" src="img/play.png" width="18px" onclick="controlAutoplay()"></div>
+        <div id="player"><img id="play-button" src="img/pause.png" width="18px" onclick="controlAutoplay()"></div>
         <div id="slider-wrapper">
             <div id="slider"></div>
         </div>
@@ -28,7 +30,10 @@
 
     </div>
 
-    <div id="selector">Select a country to add a highlight to it: </div>
+    <div id="selector-text">Select a country to add a highlight to it:
+
+    </div>
+    <div id="selector"></div>
 
     <script type="text/javascript">
         var dataset;
@@ -239,7 +244,7 @@
                     .attr("x", padding + 10)
                     .attr("y", padding + 40);
 
-                // Legend (key)
+                // Legend (keys)
                 svg.append("rect")
                     .attr("x", padding + 15)
                     .attr("y", padding + 60)
@@ -316,21 +321,32 @@
                     return [d.Code, d.Country];
                 }).keys();
 
-                allCountries.sort();
+                // sort countries so they display in alphabetical order in the dropdown
+                allCountries.sort(function (a, b) {
+                    a = a.split(",")[1]
+                    b = b.split(",")[1]
+                    if (a > b) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                });
 
                 //add this as default option
                 allCountries.splice(0, 0, "--no country selected--");
 
+                //append selector
                 var selector = d3.select("#selector")
                     .append("select");
 
+                //set up change action
                 selector
                     .on("change", function (d) {
                         var value = d3.select(this).property("value");
-                        console.log(value);
                         highlightCountry(value);
                     });
 
+                //add options to selector
                 selector.selectAll("option")
                     .data(allCountries)
                     .enter()
@@ -398,12 +414,9 @@
         function makeVisualization(year) {
 
             //get and sort the array.
-            //Why sorting? Because if it is not sorted then the "little bubbles"
-            //may get behind the "big bubbles"
-            //sorting ensures that the big bubbles are created first and the little bubbles last,
-            //so the little bubble appear in front of (and not below) the big bubbles
-            //It would have been nice to be able to manipulate their z-index
-            //but that isn't possible in an SVG.
+            //Why sorting? Because if it is not sorted then the "little bubbles" may get behind the "big bubbles"
+            //sorting ensures that the big bubbles are created first and the little bubbles last, so the little bubble appear in front of (and not below) the big bubbles
+            //It would have been nice to be able to manipulate their z-index but that isn't possible in an SVG.
             var currYearData = dataset[year].sort(function (a, b) {
                 if (parseInt(a.Population) < parseInt(b.Population)) {
                     return 1;
@@ -414,7 +427,7 @@
                 }
 
                 return -1;
-            })
+            });
 
             var country_bubbles = svg.selectAll("circle")
                 .data(currYearData, function key(d) {
@@ -476,7 +489,9 @@
 
         //displayCountryName() and removeCountryName implemented with the help of:
         //http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
-        // Display country name when mouse is over the country bubble
+        //Display country name when mouse is over the country bubble
+
+        //Display country name and country details on hoover
         function displayCountryName(d) {
             svg.append("text")
                 .transition()
@@ -547,7 +562,7 @@
                 .style("opacity", 1);
         }
 
-        //remove country name when mouse gets away from the vountry bubble
+        //remove country name and details when mouse gets away from the country bubble
         function removeCountryName(d) {
             // Select text by id and then remove
             d3.selectAll(".selectedCountry")
@@ -600,11 +615,11 @@
         function controlAutoplay() {
             img = document.getElementById("play-button");
             if (autoplaying) {
-                img.src = "img/pause.png";
+                img.src = "img/play.png";
                 autoplaying = false;
                 clearInterval(autoplay);
             } else {
-                img.src = "img/play.png";
+                img.src = "img/pause.png";
                 autoplaying = true;
                 lauchAutoplay();
             }
@@ -623,11 +638,17 @@
 
         //moves the slider handler and updates visualization
         function moveSlider(newVal) {
+            if (newVal == 0) {
+                //restart visualisation
+                d3.selectAll('circle').remove();
+            }
             yearSlider.value(newVal);
         }
 
+        //highlights a country when it is selected from the dropdown
         function highlightCountry(countryCode) {
 
+            //reset highlight and stroke from all bubbles
             svg.selectAll("circle")
                 .style("filter", "")
                 .style("stroke", "black")
@@ -635,6 +656,7 @@
 
             Countryid = "#circle-" + countryCode;
 
+            //add highlight and stroke to selected bubble
             d3.select(Countryid)
                 .style("stroke", "#f97400")
                 .style("stroke-alignment", "outer")

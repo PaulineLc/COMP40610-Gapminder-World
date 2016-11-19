@@ -631,6 +631,9 @@
 
         //moves the slider handler and updates visualization
         function moveSlider(newVal) {
+            if (newVal == 0) {
+                d3.selectAll('circle').remove();
+            }
             yearSlider.value(newVal);
         }
 

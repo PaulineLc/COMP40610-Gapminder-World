@@ -18,6 +18,11 @@ svg {
     margin: auto;
 }
 
+h1 {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+}
+
 
 /*player/slider CSS*/
 
@@ -104,4 +109,37 @@ svg {
 
 .grid path {
     stroke-width: 0;
+}
+
+
+/* selector CSS */
+
+#selector-text {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+}
+
+
+/* below CSS taken from: https://coderwall.com/p/w7npmq/fully-custom-select-box-simple-css-only */
+
+#selector {
+    border: 1px solid #ccc;
+    width: 120px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #fafafa url("img/icon-select.png") no-repeat 90% 50%;
+}
+
+#selector select {
+    padding: 5px 8px;
+    width: 130%;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    background-image: none;
+    -webkit-appearance: none;
+}
+
+#selector select:focus {
+    outline: none;
 }
