@@ -14,8 +14,6 @@
     <link href="https://fonts.googleapis.com/css?family=Libre+Franklin" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Abhaya+Libre" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet">
-
-
 </head>
 
 <body>
@@ -149,7 +147,6 @@
                     });
 
                 // Create scale to set the color on the maps
-
                 AgriColorScale = d3.scale.linear()
                     .domain([minAgri, maxAgri])
                     .range([255, 0]);
@@ -410,12 +407,6 @@
         function makeVisualization(year) {
 
             //get and sort the array.
-            //Why sorting? Because if it is not sorted then the "little bubbles"
-            //may get behind the "big bubbles"
-            //sorting ensures that the big bubbles are created first and the little bubbles last,
-            //so the little bubble appear in front of (and not below) the big bubbles
-            //It would have been nice to be able to manipulate their z-index
-            //but that isn't possible in an SVG.
             var currYearData = dataset[year];
 
             var country_bubbles = svg.selectAll("circle")
@@ -481,9 +472,7 @@
                 .text(year);
         }
 
-        //displayCountryName() and removeCountryName implemented with the help of:
-        //http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
-        // Display country name when mouse is over the country bubble
+        //display name and details of a country
         function displayCountryName(d) {
             svg.append("text")
                 .transition()
@@ -554,7 +543,7 @@
                 .style("opacity", 1);
         }
 
-        //remove country name when mouse gets away from the vountry bubble
+        //remove country name when mouse gets away from the country bubble
         function removeCountryName(d) {
             // Select text by id and then remove
             d3.selectAll(".selectedCountry")
@@ -637,7 +626,7 @@
             yearSlider.value(newVal);
         }
 
-        //create map (no data -- all countries are grey)
+        //create maps (no data -- all countries are grey)
         var map1 = new Datamap({
             scope: 'world',
             element: document.getElementById('container1'),
@@ -671,6 +660,7 @@
             }
         });
 
+        //generate data for the maps and populate the map with the data
         function updateMap(year) {
 
             //reset the maps
@@ -708,6 +698,7 @@
         }
 
 
+        //return the color intensity for a map (from light blue to dark blue)
         function pickColorIntensity(type, value) {
             if (type == "fertility") {
                 return "rgb(0, " + FertilityColorScale(value) + ", 255)";
