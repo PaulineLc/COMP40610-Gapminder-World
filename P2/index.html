@@ -189,6 +189,7 @@
                     .max(yearValues.length - 1)
                     .step(1)
                     .on("slide", function (evt, value) {
+                        stopAutoplay();
                         makeVisualization(yearValues[value]);
                         updateMap(yearValues[value]);
                     });
@@ -295,8 +296,7 @@
                     .attr("transform", "translate(" + padding + ",0)")
                     .call(yAxis
                         .tickSize(-(width - 150), 0, 0)
-                        .tickFormat("")
-                    )
+                        .tickFormat(""))
 
                 //Display current year
                 svg.append("text")
@@ -604,6 +604,12 @@
                 autoplaying = true;
                 launchAutoplay();
             }
+        }
+
+        function stopAutoplay() {
+            document.getElementById("play-button").src = "img/play.png";
+            autoplaying = false;
+            clearInterval(autoplay);
         }
 
         //generates autoplay!

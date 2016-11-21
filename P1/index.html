@@ -138,7 +138,8 @@
                     .max(yearValues.length - 1)
                     .step(1)
                     .on("slide", function (evt, value) {
-                        makeVisualization(yearValues[value])
+                        stopAutoplay();
+                        makeVisualization(yearValues[value]);
                     });
 
                 //add slider to the page
@@ -623,6 +624,13 @@
                 autoplaying = true;
                 lauchAutoplay();
             }
+        }
+
+        //stop autoplay
+        function stopAutoplay() {
+            document.getElementById("play-button").src = "img/play.png";
+            autoplaying = false;
+            clearInterval(autoplay);
         }
 
         //generates autoplay!
